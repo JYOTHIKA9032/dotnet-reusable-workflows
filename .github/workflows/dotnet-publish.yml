@@ -6,37 +6,44 @@ on:
       runner:
         type: string
         default: ubuntu-latest
+
       dotnet_version:
         type: string
         default: 8.0.x
+
+      project_path:              # ✅ REQUIRED INPUT
+        type: string
+        required: true
+
       configuration:
         type: string
         default: Release
+
       publish_output:
         type: string
-        default: ./publish
+        default: publish
+
       artifact_name:
         type: string
         default: dotnet-publish-output
 
 jobs:
   publish:
-    name: Publish
     runs-on: ${{ inputs.runner }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ inputs.dotnet_version }}
 
       - name: Publish
-        run: dotnet publish --configuration ${{ inputs.configuration }} --output ${{ inputs.publish_output }} --no-build
+        run: |
+          dotnet publish ${{ inputs.project_path }} \
+            -c ${{ inputs.configuration }} \
+            -o ${{ inputs.publish_output }}
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact_name }}
           path: ${{ inputs.publish_output }}
